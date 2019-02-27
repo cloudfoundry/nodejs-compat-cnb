@@ -1,7 +1,7 @@
 
 [buildpack]
 id = "org.cloudfoundry.buildpacks.nodejs-compat"
-name = "Node.js Compat Buildpack"
+name = "NodeJS Compat Buildpack"
 version = "0.0.1"
 
 [[stacks]]

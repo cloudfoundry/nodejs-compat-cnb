@@ -1,2 +1,6 @@
 *.tgz
 .bin
+nodejs-compat-cnb_*
+*.tgz
+bin/
+.DS_Store

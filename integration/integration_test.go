@@ -5,11 +5,9 @@ import (
 	"testing"
 
 	"github.com/cloudfoundry/dagger"
-
+	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
-
-	. "github.com/onsi/gomega"
 )
 
 func TestIntegration(t *testing.T) {

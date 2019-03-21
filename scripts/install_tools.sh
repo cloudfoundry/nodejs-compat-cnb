@@ -2,7 +2,6 @@
 set -euo pipefail
 
 PACK_VERSION=latest
-
 usage() {
     echo "Usage:   install_tools.sh <version: optional>"
     echo "Example: install_tools.sh 0.0.9"
@@ -51,6 +50,13 @@ install_pack() {
     expand $ARTIFACT_URL
 }
 
+install_packager () {
+    if [ ! -f .bin/packager ]; then
+        echo "installing packager in .bin directory"
+        go build -o .bin/packager github.com/dwillist/libcfbuildpack/packager
+    fi
+}
+
 expand() {
     PACK_ARTIFACT=$(echo $1 | sed "s/.*\///")
     PACK_VERSION=v$(echo $PACK_ARTIFACT | sed 's/pack-//' | sed 's/-.*//')
@@ -82,3 +88,5 @@ export PATH=$(pwd)/.bin:$PATH
 
 install_pack
 configure_pack
+install_packager
+

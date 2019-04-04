@@ -16,6 +16,7 @@ func TestIntegration(t *testing.T) {
 
 func testIntegration(t *testing.T, when spec.G, it spec.S) {
 	var (
+		err    error
 		bp     string
 		nodeBP string
 		npmBP  string
@@ -23,11 +24,6 @@ func testIntegration(t *testing.T, when spec.G, it spec.S) {
 
 	it.Before(func() {
 		RegisterTestingT(t)
-
-		var err error
-
-		err = dagger.BuildCFLinuxFS3()
-		Expect(err).ToNot(HaveOccurred())
 
 		bp, err = dagger.PackageBuildpack()
 		Expect(err).ToNot(HaveOccurred())

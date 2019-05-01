@@ -3,7 +3,7 @@ module github.com/cloudfoundry/nodejs-compat-cnb
 require (
 	github.com/buildpack/libbuildpack v1.14.0
 	github.com/cloudfoundry/dagger v0.0.0-20190319135526-f8eb1263b193
-	github.com/cloudfoundry/libcfbuildpack v1.53.0
+	github.com/cloudfoundry/libcfbuildpack v1.54.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/onsi/gomega v1.5.0
 	github.com/pkg/errors v0.8.1

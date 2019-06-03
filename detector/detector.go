@@ -33,6 +33,8 @@ func (d *Detector) RunDetect(context detect.Detect) (int, error) {
 		return context.Fail(), nil
 	}
 
+	// Version specific entries in buildplan...
+
 	return context.Pass(buildplan.BuildPlan{
 		compat.Dependency: buildplan.Dependency{},
 	})

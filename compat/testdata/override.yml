@@ -1,0 +1,19 @@
+nodejs:
+  dependencies:
+    - name: node
+      version: 99.99.99
+      uri: https://buildpacks.cloudfoundry.org/dependencies/node/node.99.99.99-linux-x64.tgz
+      file: BUILDPACK_DIR/node.tgz
+      sha256: 062d906c87839d03b243e2821e10653c89b4c92878bfe2bf995dec231e117bfc
+      cf_stacks:
+        - cflinuxfs3
+#
+#npm:
+#  dependencies:
+#    - name: npm
+#      version: 9.9.9
+#      uri: https://buildpacks.cloudfoundry.org/dependencies/npm/npm.9.9.9-linux-x64.tgz
+#      file: BUILDPACK_DIR/npm.tgz
+#      sha256: awesome-shasum
+#      cf_stacks:
+#        - cflinuxfs3

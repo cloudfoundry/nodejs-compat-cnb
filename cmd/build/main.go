@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
 
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 )
 
@@ -39,5 +38,5 @@ func runBuild(context build.Build) (int, error) {
 		}
 	}
 
-	return context.Success(buildplan.BuildPlan{})
+	return context.Success(context.BuildPlan)
 }

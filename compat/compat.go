@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cloudfoundry/nodejs-cnb/node"
+	"github.com/cloudfoundry/nodejs-compat-cnb/compat/resources"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -20,7 +24,8 @@ const (
 )
 
 type Contributor struct {
-	app application.Application
+	app     application.Application
+	context build.Build
 }
 
 type Scripts struct {
@@ -40,7 +45,7 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		return Contributor{}, false, nil
 	}
 
-	return Contributor{app: context.Application}, true, nil
+	return Contributor{app: context.Application, context: context}, true, nil
 }
 
 func (c Contributor) Contribute() error {
@@ -49,6 +54,10 @@ func (c Contributor) Contribute() error {
 		return err
 	} else if !exists {
 		return errors.New("package.json does not exist")
+	}
+
+	if err := c.handleOverride(); err != nil {
+		return err
 	}
 
 	file, err := os.OpenFile(packagePath, os.O_RDWR, 0666)
@@ -102,6 +111,32 @@ func (c Contributor) Contribute() error {
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(pkgJSON); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (c Contributor) handleOverride() error {
+	overrideFile := filepath.Join(c.app.Root, "override.yml")
+
+	if ok, err := helper.FileExists(overrideFile); err != nil {
+		return err
+	} else if !ok {
+		return nil
+	}
+
+	overrideContents, err := ioutil.ReadFile(overrideFile)
+	if err != nil {
+		return err
+	}
+
+	var overrideYAML resources.Override
+	if err := yaml.Unmarshal(overrideContents, &overrideYAML); err != nil {
+		return err
+	}
+
+	for _, dependency := range overrideYAML.Nodejs.Dependencies {
+		c.context.BuildPlan[node.Dependency] = resources.Convert(dependency)
 	}
 
 	return nil

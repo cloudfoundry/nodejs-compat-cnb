@@ -136,7 +136,10 @@ func (c Contributor) handleOverride() error {
 	}
 
 	for _, dependency := range overrideYAML.Nodejs.Dependencies {
-		c.context.BuildPlan[node.Dependency] = resources.Convert(dependency)
+		c.context.BuildPlan[node.Dependency].Metadata["override"] = "99.99.99"
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

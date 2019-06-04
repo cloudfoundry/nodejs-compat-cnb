@@ -65,13 +65,17 @@ func testCompat(t *testing.T, when spec.G, it spec.S) {
 			Expect(string(contents)).To(ContainSubstring(`"postinstall":"postinstall && heroku-postbuild"`))
 		})
 
-		it("adds a new dependency to the build plan", func() {
+		it.Focus("adds a new dependency to the build plan", func() {
 			test.CopyFile(t, filepath.Join("testdata", "override.yml"), filepath.Join(appRoot, "override.yml"))
 
 			Expect(contributor.Contribute()).To(Succeed())
 
-			Expect(factory.Build.BuildPlan.String()).To(ContainSubstring("99.99.99"))
-			Expect(factory.Build.BuildPlan.String()).To(ContainSubstring("https://buildpacks.cloudfoundry.org/dependencies/node/node.99.99.99-linux-x64.tgz"))
+			Expect(factory.Build.BuildPlan["override"]).To(ContainSubstring("99.99.99"))
+			Expect(factory.Build.BuildPlan["override"]).To(ContainSubstring("https://buildpacks.cloudfoundry.org/dependencies/node/node.99.99.99-linux-x64.tgz"))
+
+
+			// TODO bump libcfbuildpack
+			// factory.Build.Buildpack.Dependencies()
 		})
 	})
 }

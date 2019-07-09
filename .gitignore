@@ -4,3 +4,4 @@ nodejs-compat-cnb_*
 *.tgz
 bin/
 .DS_Store
+/buildpack.toml

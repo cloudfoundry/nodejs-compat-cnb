@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -23,15 +22,15 @@ func TestIntegration(t *testing.T) {
 	Expect(err).NotTo(HaveOccurred())
 	nodeCompatURI, err = dagger.PackageBuildpack(bpDir)
 	Expect(err).ToNot(HaveOccurred())
-	defer os.RemoveAll(nodeCompatURI)
+	defer dagger.DeleteBuildpack(nodeCompatURI)
 
 	nodeURI, err = dagger.GetLatestBuildpack("node-engine-cnb")
 	Expect(err).ToNot(HaveOccurred())
-	defer os.RemoveAll(nodeURI)
+	defer dagger.DeleteBuildpack(nodeURI)
 
 	npmURI, err = dagger.GetLatestBuildpack("npm-cnb")
 	Expect(err).ToNot(HaveOccurred())
-	defer os.RemoveAll(npmURI)
+	defer dagger.DeleteBuildpack(npmURI)
 
 	spec.Run(t, "Integration", testIntegration, spec.Report(report.Terminal{}))
 }

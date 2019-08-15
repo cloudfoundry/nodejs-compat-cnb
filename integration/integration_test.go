@@ -42,7 +42,7 @@ func testIntegration(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("when heroku-postbuild and heroku-prebuild scripts are in package.json", func() {
-		it.Focus("rewrites them as preinstall and postinstall scripts", func() {
+		it("rewrites them as preinstall and postinstall scripts", func() {
 			app, err := dagger.PackBuild(filepath.Join("testdata", "pre_post_commands"), nodeCompatURI, nodeURI, npmURI)
 			Expect(err).ToNot(HaveOccurred())
 			defer app.Destroy()

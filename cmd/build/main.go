@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/buildpack/libbuildpack/buildplan"
 	"os"
 
 	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
@@ -39,5 +38,5 @@ func runBuild(context build.Build) (int, error) {
 		}
 	}
 
-	return context.Success(buildplan.BuildPlan{})
+	return context.Success()
 }

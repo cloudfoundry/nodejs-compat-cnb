@@ -1,13 +1,13 @@
 package compat_test
 
 import (
+	"github.com/cloudfoundry/libcfbuildpack/buildpackplan"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
 
 	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
 
-	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
@@ -30,7 +30,7 @@ func testCompat(t *testing.T, when spec.G, it spec.S) {
 
 	when("NewContributor", func() {
 		it("returns true if a build plan exists with the dep", func() {
-			factory.AddBuildPlan(compat.Dependency, buildplan.Dependency{})
+			factory.AddPlan(buildpackplan.Plan{Name: compat.Dependency})
 
 			_, willContribute, err := compat.NewContributor(factory.Build)
 			Expect(err).NotTo(HaveOccurred())
@@ -47,7 +47,7 @@ func testCompat(t *testing.T, when spec.G, it spec.S) {
 		)
 		it.Before(func() {
 			appRoot = factory.Build.Application.Root
-			factory.AddBuildPlan(compat.Dependency, buildplan.Dependency{})
+			factory.AddPlan(buildpackplan.Plan{Name: compat.Dependency})
 
 			test.CopyFile(t, filepath.Join("testdata", "package.json"), filepath.Join(appRoot, "package.json"))
 

@@ -35,8 +35,7 @@ type PackageJSON struct {
 }
 
 func NewContributor(context build.Build) (Contributor, bool, error) {
-	_, willContribute := context.BuildPlan[Dependency]
-	if !willContribute {
+	if !context.Plans.Has(Dependency) {
 		return Contributor{}, false, nil
 	}
 

@@ -1,6 +1,7 @@
 package detector_test
 
 import (
+	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
 	"path/filepath"
 	"testing"
 
@@ -36,18 +37,23 @@ func testDetector(t *testing.T, when spec.G, it spec.S) {
 	it("passes when package.json contains heroku-post-build script", func() {
 		f := test.NewDetectFactory(t)
 		test.CopyFile(t, filepath.Join("testdata", "package.json"), filepath.Join(f.Detect.Application.Root, "package.json"))
-		runDetectAndExpectBuildplan(f, buildplan.BuildPlan{
-			"compat": buildplan.Dependency{},
+		runDetectAndExpectBuildplan(f, buildplan.Plan{
+			Requires: []buildplan.Required {
+				{Name: compat.Dependency},
+			},
+			Provides: []buildplan.Provided {
+				{Name: compat.Dependency},
+			},
 		})
 	})
 }
 
-func runDetectAndExpectBuildplan(factory *test.DetectFactory, buildplan buildplan.BuildPlan) {
+func runDetectAndExpectBuildplan(factory *test.DetectFactory, buildplan buildplan.Plan) {
 	d := detector.Detector{}
 	code, err := d.RunDetect(factory.Detect)
 	Expect(err).NotTo(HaveOccurred())
 
 	Expect(code).To(Equal(detect.PassStatusCode))
 
-	Expect(factory.Output).To(Equal(buildplan))
+	Expect(factory.Plans.Plan).To(Equal(buildplan))
 }

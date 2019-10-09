@@ -4,8 +4,9 @@ go 1.12
 
 require (
 	github.com/buildpack/libbuildpack v1.24.5
-	github.com/cloudfoundry/dagger v0.0.0-20191009190047-e65ce4cd4ad0
+	github.com/cloudfoundry/dagger v0.0.0-20191009195436-217477522663
 	github.com/cloudfoundry/libcfbuildpack v1.89.0
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1

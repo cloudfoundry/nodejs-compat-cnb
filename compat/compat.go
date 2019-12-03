@@ -7,20 +7,24 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/libcfbuildpack/helper"
-
 	"github.com/buildpack/libbuildpack/application"
-
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/helper"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"github.com/mitchellh/mapstructure"
 )
 
 const (
 	Dependency = "compat"
+
+	MemoryAvailableScript = `if which jq > /dev/null; then
+	export MEMORY_AVAILABLE="$(echo $VCAP_APPLICATION | jq .limits.mem)"
+fi`
 )
 
 type Contributor struct {
-	app     application.Application
+	app   application.Application
+	layer layers.Layer
 }
 
 type Scripts struct {
@@ -39,7 +43,10 @@ func NewContributor(context build.Build) (Contributor, bool, error) {
 		return Contributor{}, false, nil
 	}
 
-	return Contributor{app: context.Application}, true, nil
+	return Contributor{
+		app:   context.Application,
+		layer: context.Layers.Layer(Dependency),
+	}, true, nil
 }
 
 func (c Contributor) Contribute() error {
@@ -63,11 +70,10 @@ func (c Contributor) Contribute() error {
 
 	scriptsMap, ok := pkgJSON["scripts"].(map[string]interface{})
 	if !ok {
-		return errors.New("package.json has no scripts key")
+		scriptsMap = map[string]interface{}{}
 	}
 
-	scripts := Scripts{}
-
+	var scripts Scripts
 	if err := mapstructure.Decode(scriptsMap, &scripts); err != nil {
 		return err
 	}
@@ -101,6 +107,16 @@ func (c Contributor) Contribute() error {
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(pkgJSON); err != nil {
 		return err
+	}
+
+	if _, ok := os.LookupEnv("VCAP_APPLICATION"); ok {
+		if err := c.layer.WriteProfile("0_memory_available.sh", MemoryAvailableScript); err != nil {
+			return err
+		}
+
+		if err := c.layer.WriteMetadata(nil, layers.Launch); err != nil {
+			return err
+		}
 	}
 
 	return nil

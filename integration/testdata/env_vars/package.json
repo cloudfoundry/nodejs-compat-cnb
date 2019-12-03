@@ -1,0 +1,11 @@
+{
+  "name": "simple_app",
+  "version": "0.0.0",
+  "description": "hello, world",
+  "main": "server.js",
+  "engines": {
+    "node": "8.x"
+  },
+  "author": "",
+  "license": "BSD-2-Clause"
+}

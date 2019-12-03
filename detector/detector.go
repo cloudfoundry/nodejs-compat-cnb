@@ -15,29 +15,31 @@ import (
 type Detector struct{}
 
 func (d *Detector) RunDetect(context detect.Detect) (int, error) {
-	packageFile := filepath.Join(context.Application.Root, "package.json")
-	file, err := os.Open(packageFile)
-	if os.IsNotExist(err) {
-		return context.Fail(), nil
-	} else if err != nil {
+	file, err := os.Open(filepath.Join(context.Application.Root, "package.json"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return context.Fail(), nil
+		}
+
 		return context.Fail(), errors.Wrap(err, "failed to open package.json")
 	}
 	defer file.Close()
 
-	pkgJSON := compat.PackageJSON{}
-	if err := json.NewDecoder(file).Decode(&pkgJSON); err != nil {
+	var packageJSON compat.PackageJSON
+	if err := json.NewDecoder(file).Decode(&packageJSON); err != nil {
 		return context.Fail(), err
 	}
 
-	if pkgJSON.Scripts.HerokuPreBuild == "" && pkgJSON.Scripts.HerokuPostBuild == "" {
+	_, ok := os.LookupEnv("VCAP_APPLICATION")
+	if packageJSON.Scripts.HerokuPreBuild == "" && packageJSON.Scripts.HerokuPostBuild == "" && !ok {
 		return context.Fail(), nil
 	}
 
 	return context.Pass(buildplan.Plan{
-		Requires: []buildplan.Required {
+		Requires: []buildplan.Required{
 			{Name: compat.Dependency},
 		},
-		Provides: []buildplan.Provided {
+		Provides: []buildplan.Provided{
 			{Name: compat.Dependency},
 		},
 	})

@@ -1,9 +1,12 @@
 package detector_test
 
 import (
-	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/cloudfoundry/nodejs-compat-cnb/compat"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/nodejs-compat-cnb/detector"
@@ -20,40 +23,155 @@ func TestUnitDetector(t *testing.T) {
 	spec.Run(t, "Detector", testDetector, spec.Report(report.Terminal{}))
 }
 
-func testDetector(t *testing.T, when spec.G, it spec.S) {
+func testDetector(t *testing.T, context spec.G, it spec.S) {
+	var (
+		factory *test.DetectFactory
+
+		d detector.Detector
+	)
+
 	it.Before(func() {
 		RegisterTestingT(t)
+
+		factory = test.NewDetectFactory(t)
+		err := ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "package.json"), []byte(`{
+			"name": "simple_app",
+			"version": "0.0.0",
+			"description": "some app",
+			"main": "server.js",
+			"author": "",
+			"license": "",
+			"repository": {
+				"type": "git",
+				"url": ""
+			},
+			"engines": {
+				"node": "~10"
+			}
+		}`), 0644)
+		Expect(err).NotTo(HaveOccurred())
+
+		d = detector.Detector{}
 	})
 
-	it("fails without a package.json", func() {
-		f := test.NewDetectFactory(t)
-
-		d := detector.Detector{}
-		code, err := d.RunDetect(f.Detect)
+	it("fails", func() {
+		code, err := d.RunDetect(factory.Detect)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(code).To(Equal(detect.FailStatusCode))
 	})
 
-	it("passes when package.json contains heroku-post-build script", func() {
-		f := test.NewDetectFactory(t)
-		test.CopyFile(t, filepath.Join("testdata", "package.json"), filepath.Join(f.Detect.Application.Root, "package.json"))
-		runDetectAndExpectBuildplan(f, buildplan.Plan{
-			Requires: []buildplan.Required {
-				{Name: compat.Dependency},
-			},
-			Provides: []buildplan.Provided {
-				{Name: compat.Dependency},
-			},
+	context("when the package.json file is missing", func() {
+		it.Before(func() {
+			Expect(os.Remove(filepath.Join(factory.Detect.Application.Root, "package.json"))).To(Succeed())
+		})
+
+		it("fails", func() {
+			code, err := d.RunDetect(factory.Detect)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(code).To(Equal(detect.FailStatusCode))
 		})
 	})
-}
 
-func runDetectAndExpectBuildplan(factory *test.DetectFactory, buildplan buildplan.Plan) {
-	d := detector.Detector{}
-	code, err := d.RunDetect(factory.Detect)
-	Expect(err).NotTo(HaveOccurred())
+	context("when package.json contains heroku-postbuild script", func() {
+		it.Before(func() {
+			err := ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "package.json"), []byte(`{
+				"name": "simple_app",
+				"version": "0.0.0",
+				"description": "some app",
+				"main": "server.js",
+				"scripts": {
+					"heroku-postbuild": "echo whatever"
+				},
+				"author": "",
+				"license": "",
+				"repository": {
+					"type": "git",
+					"url": ""
+				},
+				"engines": {
+					"node": "~10"
+				}
+			}`), 0644)
+			Expect(err).NotTo(HaveOccurred())
+		})
 
-	Expect(code).To(Equal(detect.PassStatusCode))
+		it("passes", func() {
+			code, err := d.RunDetect(factory.Detect)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(code).To(Equal(detect.PassStatusCode))
 
-	Expect(factory.Plans.Plan).To(Equal(buildplan))
+			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+				Requires: []buildplan.Required{
+					{Name: compat.Dependency},
+				},
+				Provides: []buildplan.Provided{
+					{Name: compat.Dependency},
+				},
+			}))
+		})
+	})
+
+	context("when package.json contains heroku-prebuild script", func() {
+		it.Before(func() {
+			err := ioutil.WriteFile(filepath.Join(factory.Detect.Application.Root, "package.json"), []byte(`{
+				"name": "simple_app",
+				"version": "0.0.0",
+				"description": "some app",
+				"main": "server.js",
+				"scripts": {
+					"heroku-prebuild": "echo whatever"
+				},
+				"author": "",
+				"license": "",
+				"repository": {
+					"type": "git",
+					"url": ""
+				},
+				"engines": {
+					"node": "~10"
+				}
+			}`), 0644)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		it("passes", func() {
+			code, err := d.RunDetect(factory.Detect)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(code).To(Equal(detect.PassStatusCode))
+
+			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+				Requires: []buildplan.Required{
+					{Name: compat.Dependency},
+				},
+				Provides: []buildplan.Provided{
+					{Name: compat.Dependency},
+				},
+			}))
+		})
+	})
+
+	context("when $VCAP_APPLICATION is assigned", func() {
+		it.Before(func() {
+			Expect(os.Setenv("VCAP_APPLICATION", `{}`)).To(Succeed())
+		})
+
+		it.After(func() {
+			Expect(os.Unsetenv("VCAP_APPLICATION")).To(Succeed())
+		})
+
+		it("passes", func() {
+			code, err := d.RunDetect(factory.Detect)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(code).To(Equal(detect.PassStatusCode))
+
+			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+				Requires: []buildplan.Required{
+					{Name: compat.Dependency},
+				},
+				Provides: []buildplan.Provided{
+					{Name: compat.Dependency},
+				},
+			}))
+		})
+	})
 }

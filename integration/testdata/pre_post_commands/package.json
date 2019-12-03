@@ -8,15 +8,11 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "heroku-prebuild": "echo heroku-prebuild > text_1.txt",
-    "preinstall": "echo preinstall >> text_1.txt",
-    "postinstall": "echo postinstall >> text_1.txt",
-    "heroku-postbuild": "echo heroku-postbuild >> text_1.txt"
+    "heroku-prebuild": "heroku-prebuild",
+    "preinstall": "preinstall",
+    "postinstall": "postinstall",
+    "heroku-postbuild": "heroku-postbuild"
   },
   "author": "",
-  "license": "BSD-2-Clause",
-  "repository": {
-    "type" : "git",
-    "url" : "http://github.com/cloudfoundry/nodejs-buildpack.git"
-  }
+  "license": "BSD-2-Clause"
 }

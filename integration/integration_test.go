@@ -88,7 +88,10 @@ func testIntegration(t *testing.T, context spec.G, it spec.S) {
 				body, _, err = app.HTTPGet("/")
 				return err
 			}, "5s").Should(Succeed())
-			Expect(body).To(ContainSubstring("MEMORY_AVAILABLE=\"some-memory-limit\""))
+			Expect(body).To(ContainSubstring("MEMORY_AVAILABLE=some-memory-limit"))
+			Expect(body).To(ContainSubstring("NODE_MODULES_CACHE=true"))
+			Expect(body).To(ContainSubstring("WEB_MEMORY=512"))
+			Expect(body).To(ContainSubstring("WEB_CONCURRENCY=1"))
 		})
 	})
 }

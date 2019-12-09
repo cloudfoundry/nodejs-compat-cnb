@@ -18,7 +18,7 @@ const (
 	Dependency = "compat"
 
 	MemoryAvailableScript = `if which jq > /dev/null; then
-	export MEMORY_AVAILABLE="$(echo $VCAP_APPLICATION | jq .limits.mem)"
+	export MEMORY_AVAILABLE="$(echo $VCAP_APPLICATION | jq -r .limits.mem)"
 fi`
 )
 
@@ -113,10 +113,22 @@ func (c Contributor) Contribute() error {
 		if err := c.layer.WriteProfile("0_memory_available.sh", MemoryAvailableScript); err != nil {
 			return err
 		}
+	}
 
-		if err := c.layer.WriteMetadata(nil, layers.Launch); err != nil {
-			return err
-		}
+	if err := c.layer.OverrideSharedEnv("NODE_MODULES_CACHE", "true"); err != nil {
+		return err
+	}
+
+	if err := c.layer.OverrideSharedEnv("WEB_MEMORY", "512"); err != nil {
+		return err
+	}
+
+	if err := c.layer.OverrideSharedEnv("WEB_CONCURRENCY", "1"); err != nil {
+		return err
+	}
+
+	if err := c.layer.WriteMetadata(nil, layers.Launch); err != nil {
+		return err
 	}
 
 	return nil

@@ -112,6 +112,15 @@ func testCompat(t *testing.T, context spec.G, it spec.S) {
 			Expect(filepath.Join(layer.Root, "profile.d", "0_memory_available.sh")).NotTo(BeARegularFile())
 		})
 
+		it("sets heroku-specific environment variables", func() {
+			Expect(contributor.Contribute()).To(Succeed())
+
+			layer := factory.Build.Layers.Layer(compat.Dependency)
+			Expect(layer).To(test.HaveOverrideSharedEnvironment("NODE_MODULES_CACHE", "true"))
+			Expect(layer).To(test.HaveOverrideSharedEnvironment("WEB_MEMORY", "512"))
+			Expect(layer).To(test.HaveOverrideSharedEnvironment("WEB_CONCURRENCY", "1"))
+		})
+
 		context("when the package.json contains heroku build hooks", func() {
 			it.Before(func() {
 				err := ioutil.WriteFile(filepath.Join(factory.Build.Application.Root, "package.json"), []byte(`{
@@ -183,7 +192,7 @@ func testCompat(t *testing.T, context spec.G, it spec.S) {
 				contents, err := ioutil.ReadFile(filepath.Join(layer.Root, "profile.d", "0_memory_available.sh"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(contents)).To(Equal(`if which jq > /dev/null; then
-	export MEMORY_AVAILABLE="$(echo $VCAP_APPLICATION | jq .limits.mem)"
+	export MEMORY_AVAILABLE="$(echo $VCAP_APPLICATION | jq -r .limits.mem)"
 fi`))
 			})
 		})

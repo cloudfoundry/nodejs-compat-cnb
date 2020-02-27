@@ -9,6 +9,7 @@ import (
 
 func TestUnitCompat(t *testing.T) {
 	suite := spec.New("compat", spec.Report(report.Terminal{}))
+	suite("Build", testBuild)
 	suite("Detect", testDetect)
 	suite("PackageJSONParser", testPackageJSONParser)
 	suite.Run(t)

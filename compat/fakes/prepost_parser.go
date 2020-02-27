@@ -3,7 +3,7 @@ package fakes
 import "sync"
 
 type PrePostParser struct {
-	ParseCall struct {
+	ContainsScriptsCall struct {
 		sync.Mutex
 		CallCount int
 		Receives  struct {
@@ -17,13 +17,13 @@ type PrePostParser struct {
 	}
 }
 
-func (f *PrePostParser) Parse(param1 string) (bool, error) {
-	f.ParseCall.Lock()
-	defer f.ParseCall.Unlock()
-	f.ParseCall.CallCount++
-	f.ParseCall.Receives.Path = param1
-	if f.ParseCall.Stub != nil {
-		return f.ParseCall.Stub(param1)
+func (f *PrePostParser) ContainsScripts(param1 string) (bool, error) {
+	f.ContainsScriptsCall.Lock()
+	defer f.ContainsScriptsCall.Unlock()
+	f.ContainsScriptsCall.CallCount++
+	f.ContainsScriptsCall.Receives.Path = param1
+	if f.ContainsScriptsCall.Stub != nil {
+		return f.ContainsScriptsCall.Stub(param1)
 	}
-	return f.ParseCall.Returns.ScriptsExist, f.ParseCall.Returns.Err
+	return f.ContainsScriptsCall.Returns.ScriptsExist, f.ContainsScriptsCall.Returns.Err
 }

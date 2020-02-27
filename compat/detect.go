@@ -1,6 +1,11 @@
 package compat
 
-import "github.com/cloudfoundry/packit"
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/cloudfoundry/packit"
+)
 
 const (
 	PlanDependency = "compat"
@@ -8,11 +13,31 @@ const (
 
 //go:generate faux --interface PrePostParser --output fakes/prepost_parser.go
 type PrePostParser interface {
-	Parse(path string) (scriptsExist bool, err error)
+	ContainsScripts(path string) (scriptsExist bool, err error)
 }
 
 func Detect(packageJSONParser PrePostParser) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
-		return packit.DetectResult{}, packit.Fail
+
+		hasHerokuScripts, err := packageJSONParser.ContainsScripts(filepath.Join(context.WorkingDir, "package.json"))
+		if err != nil {
+			return packit.DetectResult{}, err
+		}
+
+		_, set := os.LookupEnv("VCAP_APPLICATION")
+		if !hasHerokuScripts && !set {
+			return packit.DetectResult{}, packit.Fail
+		}
+
+		return packit.DetectResult{
+			Plan: packit.BuildPlan{
+				Provides: []packit.BuildPlanProvision{
+					{Name: PlanDependency},
+				},
+				Requires: []packit.BuildPlanRequirement{
+					{Name: PlanDependency},
+				},
+			},
+		}, nil
 	}
 }

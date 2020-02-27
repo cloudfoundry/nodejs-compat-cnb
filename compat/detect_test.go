@@ -1,7 +1,9 @@
 package compat_test
 
 import (
+	"errors"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -21,7 +23,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		workingDir        string
 		detect            packit.DetectFunc
 	)
-	//WHEN PACKAGE.JSON EXISTS BUT CONTAINS NO PRE-BUILD, POST-BUILD and $VCAP_APPLICATION is not found
 	it.Before(func() {
 		var err error
 
@@ -32,17 +33,119 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		Expect(err).NotTo(HaveOccurred())
 
 		packageJSONParser = &fakes.PrePostParser{}
-		packageJSONParser.ParseCall.Returns.ScriptsExist = false
+		packageJSONParser.ContainsScriptsCall.Returns.ScriptsExist = false
 
 		detect = compat.Detect(packageJSONParser)
 	})
 
-	it("fails", func() {
-
-		_, err := detect(packit.DetectContext{
-			WorkingDir: workingDir,
+	context("when $VCAP_APPLICATION is set", func() {
+		it.Before(func() {
+			err := os.Setenv("VCAP_APPLICATION", "some-value")
+			Expect(err).NotTo(HaveOccurred())
 		})
-		Expect(err).To(MatchError(packit.Fail))
+
+		it.After(func() {
+			err := os.Unsetenv("VCAP_APPLICATION")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		context("when heroku pre and post build scripts exist", func() {
+			it.Before(func() {
+				packageJSONParser.ContainsScriptsCall.Returns.ScriptsExist = true
+			})
+
+			it("passes and adds compat dependency to buildplan", func() {
+				result, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result.Plan).To(Equal(packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: compat.PlanDependency},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{Name: compat.PlanDependency},
+					},
+				}))
+				Expect(packageJSONParser.ContainsScriptsCall.Receives.Path).To(Equal(filepath.Join(workingDir, "package.json")))
+			})
+		})
+
+		context("when heroku pre and post build scripts do not exist", func() {
+			it.Before(func() {
+				packageJSONParser.ContainsScriptsCall.Returns.ScriptsExist = false
+			})
+
+			it("passes and adds compat dependency to buildplan", func() {
+				result, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result.Plan).To(Equal(packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: compat.PlanDependency},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{Name: compat.PlanDependency},
+					},
+				}))
+				Expect(packageJSONParser.ContainsScriptsCall.Receives.Path).To(Equal(filepath.Join(workingDir, "package.json")))
+			})
+		})
+	})
+
+	context("when $VCAP_APPLICATION is not set", func() {
+
+		context("when heroku pre and post build scripts exist", func() {
+			it.Before(func() {
+				packageJSONParser.ContainsScriptsCall.Returns.ScriptsExist = true
+			})
+
+			it("passes and adds compat dependency to buildplan", func() {
+				result, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result.Plan).To(Equal(packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: compat.PlanDependency},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{Name: compat.PlanDependency},
+					},
+				}))
+				Expect(packageJSONParser.ContainsScriptsCall.Receives.Path).To(Equal(filepath.Join(workingDir, "package.json")))
+			})
+		})
+
+		context("when heroku pre and post build scripts do not exist", func() {
+			it.Before(func() {
+				packageJSONParser.ContainsScriptsCall.Returns.ScriptsExist = false
+			})
+
+			it("fails detection", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).To(MatchError(packit.Fail))
+				Expect(packageJSONParser.ContainsScriptsCall.Receives.Path).To(Equal(filepath.Join(workingDir, "package.json")))
+			})
+		})
+	})
+
+	context("failure cases", func() {
+		context("when checking for scripts in package.json fails", func() {
+			it.Before(func() {
+				packageJSONParser.ContainsScriptsCall.Returns.Err = errors.New("failed to check for pre and post build scripts")
+			})
+			it("returns an error", func() {
+				_, err := detect(packit.DetectContext{
+					WorkingDir: workingDir,
+				})
+				Expect(err).To(MatchError("failed to check for pre and post build scripts"))
+				Expect(packageJSONParser.ContainsScriptsCall.Receives.Path).To(Equal(filepath.Join(workingDir, "package.json")))
+			})
+		})
 	})
 
 }

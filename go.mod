@@ -6,8 +6,8 @@ require (
 	cloud.google.com/go v0.53.0 // indirect
 	github.com/cloudfoundry/dagger v0.0.0-20200213200846-c2a9723f08c4
 	github.com/cloudfoundry/libcfbuildpack v1.91.23 // indirect
-	github.com/cloudfoundry/occam v0.0.0-20200227163741-994b2ee66bfc
-	github.com/cloudfoundry/packit v0.0.0-20200213185904-9d0fc689e7af
+	github.com/cloudfoundry/occam v0.0.0-20200227222407-1c4318bd26e2
+	github.com/cloudfoundry/packit v0.0.0-20200227210312-ad5e6f66a6a5
 	github.com/kr/text v0.2.0 // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0

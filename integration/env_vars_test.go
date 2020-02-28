@@ -53,14 +53,14 @@ func testEnvVars(t *testing.T, context spec.G, it spec.S) {
 			image, _, err = pack.Build.
 				WithBuildpacks(nodeCompatURI).
 				WithNoPull().
-				WithEnv(map[string]string{"VCAP_APPLICATION": `{"limits": {"mem": "some-memory-limit"}}`}).
+				WithEnv(map[string]string{"VCAP_APPLICATION": `{"limits": {"mem": "2048"}}`}).
 				Execute(name, filepath.Join("testdata", "env_vars"))
 			Expect(err).NotTo(HaveOccurred())
 
 			container, err = docker.Container.Run.
 				WithEnv(map[string]string{
 					"PORT":             "8080",
-					"VCAP_APPLICATION": `{"limits": {"mem": "some-memory-limit"}}`,
+					"VCAP_APPLICATION": `{"limits": {"mem": "2048"}}`,
 				}).
 				WithCommand("/workspace/server.sh").
 				Execute(image.ID)
@@ -85,7 +85,7 @@ func testEnvVars(t *testing.T, context spec.G, it spec.S) {
 				return nil
 			}).Should(Succeed())
 
-			Expect(body).To(ContainSubstring("MEMORY_AVAILABLE=some-memory-limit"))
+			Expect(body).To(ContainSubstring("MEMORY_AVAILABLE=2048"))
 			Expect(body).To(ContainSubstring("NODE_MODULES_CACHE=true"))
 			Expect(body).To(ContainSubstring("WEB_MEMORY=512"))
 			Expect(body).To(ContainSubstring("WEB_CONCURRENCY=1"))

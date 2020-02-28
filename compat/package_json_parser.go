@@ -7,10 +7,13 @@ import (
 )
 
 type PackageJSONParser struct {
+	logEmitter LogEmitter
 }
 
-func NewPackageJSONParser() PackageJSONParser {
-	return PackageJSONParser{}
+func NewPackageJSONParser(l LogEmitter) PackageJSONParser {
+	return PackageJSONParser{
+		logEmitter: l,
+	}
 }
 
 func (p PackageJSONParser) ContainsScripts(path string) (bool, error) {
@@ -64,6 +67,8 @@ func (p PackageJSONParser) RewriteInstallScripts(path string) error {
 	if !prebuildSet && !postbuildSet {
 		return nil
 	}
+
+	p.logEmitter.RewritePackageJSON(prebuildSet, postbuildSet)
 
 	if prebuildSet {
 		script, ok := scripts["preinstall"]

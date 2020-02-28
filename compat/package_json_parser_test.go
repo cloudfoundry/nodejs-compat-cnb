@@ -26,7 +26,8 @@ func testPackageJSONParser(t *testing.T, context spec.G, it spec.S) {
 
 		path = file.Name()
 
-		parser = compat.NewPackageJSONParser()
+		logEmitter := compat.NewLogEmitter(ioutil.Discard)
+		parser = compat.NewPackageJSONParser(logEmitter)
 	})
 
 	it.After(func() {

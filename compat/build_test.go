@@ -19,6 +19,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		Expect = NewWithT(t).Expect
 
 		packageJSONParser *fakes.ScriptRewriter
+		logEmitter        compat.LogEmitter
 		workingDir        string
 		layersDir         string
 		build             packit.BuildFunc
@@ -35,7 +36,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		packageJSONParser = &fakes.ScriptRewriter{}
 		packageJSONParser.RewriteInstallScriptsCall.Returns.Error = nil
 
-		build = compat.Build(packageJSONParser)
+		logEmitter = compat.NewLogEmitter(ioutil.Discard)
+
+		build = compat.Build(packageJSONParser, logEmitter)
 	})
 
 	it.After(func() {

@@ -64,6 +64,7 @@ function main() {
             PACKAGE_DIR="${PACKAGE_DIR}.tgz"
         fi
 
+
         .bin/jam pack \
         --buildpack "$(pwd)/buildpack.toml" \
         --version "${version}" \

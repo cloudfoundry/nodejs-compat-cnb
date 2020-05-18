@@ -10,7 +10,7 @@ require (
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.10.0
 	github.com/paketo-buildpacks/occam v0.0.7
-	github.com/paketo-buildpacks/packit v0.0.9
+	github.com/paketo-buildpacks/packit v0.0.10
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/net v0.0.0-20200513185701-a91f0712d120 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
